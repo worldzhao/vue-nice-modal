@@ -1,6 +1,7 @@
 {
   "name": "vue-nice-modal",
-  "version": "0.0.1",
+  "version": "1.0.0",
+  "private": false,
   "sideEffects": false,
   "main": "./dist/index.js",
   "module": "./dist/esm/index.js",
@@ -31,7 +32,7 @@
     }
   },
   "publishConfig": {
-    "registry": "https://registry.npmjs.org"
+    "access": "public"
   },
   "tsup": {
     "entry": [
