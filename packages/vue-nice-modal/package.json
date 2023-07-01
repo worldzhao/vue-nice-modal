@@ -1,0 +1,54 @@
+{
+  "name": "vue-nice-modal",
+  "version": "0.0.1",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "format": "prettier ./src --write",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "vue-demi": "^0.14.5"
+  },
+  "devDependencies": {
+    "@swc/core": "^1.3.67",
+    "@types/node": "^18.16.11",
+    "tsup": "^7.1.0",
+    "typescript": "^5.0.4",
+    "vue": "^3.3.4"
+  },
+  "peerDependencies": {
+    "@vue/composition-api": "^1.1.2",
+    "vue": "^2.6.0 || ^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@vue/composition-api": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "np": {
+    "yarn": false,
+    "contents": "dist"
+  },
+  "tsup": {
+    "entry": [
+      "src/index.ts"
+    ],
+    "format": [
+      "cjs",
+      "esm"
+    ],
+    "legacyOutput": true,
+    "splitting": false,
+    "sourcemap": true,
+    "clean": true,
+    "dts": true
+  }
+}
