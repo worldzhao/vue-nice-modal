@@ -1,6 +1,6 @@
 {
   "name": "vue2.7.x",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "type": "module",
   "scripts": {
