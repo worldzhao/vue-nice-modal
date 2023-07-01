@@ -33,10 +33,6 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
   },
-  "np": {
-    "yarn": false,
-    "contents": "dist"
-  },
   "tsup": {
     "entry": [
       "src/index.ts"
