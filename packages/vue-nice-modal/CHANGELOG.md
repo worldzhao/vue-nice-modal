@@ -1,5 +1,11 @@
 # vue-nice-modal
 
+## 1.1.0
+
+### Minor Changes
+
+- 568848c: add plugin to share app context for vue3
+
 ## 1.0.1
 
 ### Patch Changes
