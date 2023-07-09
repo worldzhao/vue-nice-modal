@@ -3,12 +3,14 @@ import { Modal } from 'ant-design-vue';
 import { ref } from 'vue';
 
 const props = defineProps([
+  // inject by vue-nice-modal
   'visible',
-  'title',
-  'content',
   'hide',
   'remove',
   'callback',
+  // props you need
+  'title',
+  'content',
 ]);
 
 const emit = defineEmits(['update:visible']);

@@ -3,13 +3,45 @@ import type {
   Component,
   VNodeProps,
   AllowedComponentProps,
+  App,
+  AppContext,
 } from 'vue-demi';
-import { h, isVue2 } from 'vue-demi';
+import { h, isVue2, createApp, isVue3 } from 'vue-demi';
 import { extend, inBrowser, noop } from './utils';
-import { mountComponent } from './mount-component';
 import { useModalState } from './use-modal-state';
 
-function initInstance(Comp: any, options: Record<string, unknown>) {
+let appContextMap: Record<string, AppContext> = {};
+const DEFAULT_APP_KEY = 'default';
+
+function mountComponent(RootComponent: Component, appKey: string) {
+  const app = createApp(RootComponent);
+
+  if (isVue3) {
+    const inheritContext = appContextMap[appKey];
+    inheritContext && extend(app._context, inheritContext);
+  }
+
+  const root = document.createElement('div');
+  const container = document.createElement('div');
+  root.className = 'vue-nice-modal-root';
+  root.appendChild(container);
+
+  document.body.appendChild(root);
+
+  return {
+    instance: app.mount(container),
+    unmount() {
+      app.unmount();
+      document.body.removeChild(root);
+    },
+  };
+}
+
+function initInstance(
+  Comp: any,
+  options: Record<string, unknown>,
+  appKey: string
+) {
   const Wrapper = {
     setup() {
       const { state, toggle } = useModalState(options);
@@ -28,7 +60,7 @@ function initInstance(Comp: any, options: Record<string, unknown>) {
     },
   };
 
-  return mountComponent(Wrapper);
+  return mountComponent(Wrapper, appKey);
 }
 
 export type INiceModalHandlers<T = any> = {
@@ -49,7 +81,7 @@ type ExtractOptions<T extends Record<string, any>> = Omit<
   keyof INiceModalHandlers | 'visible' | 'onUpdate:visible'
 >;
 
-export function create<C extends Component>(Comp: C) {
+export function create<C extends Component>(Comp: C, appKey = DEFAULT_APP_KEY) {
   let instance: ComponentPublicInstance<{}, any> | null = null;
   let remove = noop;
   let hide = noop;
@@ -72,7 +104,11 @@ export function create<C extends Component>(Comp: C) {
       };
 
       if (!instance) {
-        const { instance: _instance, unmount } = initInstance(Comp, _options);
+        const { instance: _instance, unmount } = initInstance(
+          Comp,
+          _options,
+          appKey
+        );
         instance = _instance;
         remove = () => {
           instance = null;
@@ -96,3 +132,20 @@ export function create<C extends Component>(Comp: C) {
     remove: () => remove(),
   };
 }
+
+export const VueNiceModalPluginForVue3 = {
+  install: (
+    app: App,
+    options: { appKey: string } = { appKey: DEFAULT_APP_KEY }
+  ) => {
+    if (
+      typeof appContextMap[options.appKey] !== 'undefined' &&
+      process.env.NODE_ENV === 'development'
+    ) {
+      console.warn(
+        `[Vue Nice Modal]: The current app <${options.appKey}> has registered the relevant context in Vue Nice Modal. Please confirm if you need to override it. If not, please provide a unique app key for registering the context and inject the key when calling the create method.`
+      );
+    }
+    appContextMap[options.appKey] = app._context;
+  },
+};

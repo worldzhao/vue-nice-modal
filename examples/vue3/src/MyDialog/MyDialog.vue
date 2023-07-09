@@ -56,6 +56,8 @@ const handleConfirm = async () => {
     show-cancel-button
     class="demo-dialog"
   >
+    <!-- component registered at main app instance -->
+    <van-icon name="chat-o" />
     <img src="https://fastly.jsdelivr.net/npm/@vant/assets/apple-3.jpeg" />
   </Dialog>
 </template>
