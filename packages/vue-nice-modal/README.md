@@ -119,6 +119,32 @@ Once you have defined your custom modal component, you can use the create() func
 
 </details>
 
+### Plugin for sharing context(Vue@^3 only)
+
+```javascript
+import { createApp } from 'vue';
+import { VueNiceModalPluginForVue3 } from 'vue-nice-modal';
+import App from './App.vue';
+
+const app = createApp(App);
+
+app.use(VueNiceModalPluginForVue3);
+
+app.mount('#app');
+```
+
+Vue Nice Modal creates a new Vue application instance internally and mounts the user-created component to that instance. This allows it to run properly inside a modal without conflicting with the state and logic of the main application.
+
+However, if you need to access data or methods from the main application inside the modal, you can use the plugin to achieve shared context.
+
+> you can differentiate between multiple applications by passing a appKey as an option in the plugin options and passing it when creating the modal instance.
+
+```javascript
+app.use(VueNiceModalPluginForVue3, { appKey: 'another app key' });
+
+create(MyModal, 'another app key');
+```
+
 ## API
 
 ### create(Comp: Component): Modal
