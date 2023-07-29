@@ -88,7 +88,7 @@ type InferPayloadType<T extends {}> = T extends {
   : unknown;
 
 // 强制计算类型
-type SimpleLify<T> = T extends any ? { [P in keyof T]: T[P] } : never;
+type Simplify<T> = T extends any ? { [P in keyof T]: T[P] } : never;
 
 type RemoveReadonly<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -97,10 +97,10 @@ export function create<C extends Component>(Comp: C, appKey = DEFAULT_APP_KEY) {
   let remove = noop;
   let hide = noop;
 
-  type Options = SimpleLify<RemoveReadonly<ExtractOptions<ComponentProps<C>>>>;
+  type Options = Simplify<RemoveReadonly<ExtractOptions<ComponentProps<C>>>>;
   const show = (
     options: Options
-  ): Promise<SimpleLify<InferPayloadType<ComponentProps<C>>>> => {
+  ): Promise<Simplify<InferPayloadType<ComponentProps<C>>>> => {
     if (!inBrowser) return Promise.reject();
 
     return new Promise((resolve, reject) => {
