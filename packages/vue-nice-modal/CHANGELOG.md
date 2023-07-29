@@ -1,5 +1,11 @@
 # vue-nice-modal
 
+## 1.1.1
+
+### Patch Changes
+
+- 75af024: optimize type hints
+
 ## 1.1.0
 
 ### Minor Changes

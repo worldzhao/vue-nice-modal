@@ -1,5 +1,12 @@
 # vue2.7.x
 
+## 0.0.4
+
+### Patch Changes
+
+- Updated dependencies [75af024]
+  - vue-nice-modal@1.1.1
+
 ## 0.0.3
 
 ### Patch Changes
