@@ -81,17 +81,31 @@ type ExtractOptions<T extends Record<string, any>> = Omit<
   keyof INiceModalHandlers | 'visible' | 'onUpdate:visible'
 >;
 
+type InferPayloadType<T extends {}> = T extends {
+  readonly callback: (action: any, payload?: infer R) => void;
+}
+  ? R
+  : unknown;
+
+// 强制计算类型
+type SimpleLify<T> = T extends any ? { [P in keyof T]: T[P] } : never;
+
+type RemoveReadonly<T> = { -readonly [P in keyof T]: T[P] };
+
 export function create<C extends Component>(Comp: C, appKey = DEFAULT_APP_KEY) {
   let instance: ComponentPublicInstance<{}, any> | null = null;
   let remove = noop;
   let hide = noop;
 
-  const show = (options: ExtractOptions<ComponentProps<C>>) => {
-    if (!inBrowser) return Promise.resolve();
+  type Options = SimpleLify<RemoveReadonly<ExtractOptions<ComponentProps<C>>>>;
+  const show = (
+    options: Options
+  ): Promise<SimpleLify<InferPayloadType<ComponentProps<C>>>> => {
+    if (!inBrowser) return Promise.reject();
 
     return new Promise((resolve, reject) => {
       const handler: INiceModalHandlers = {
-        callback: (action: 'confirm' | 'cancel', payload: unknown) => {
+        callback: (action: 'confirm' | 'cancel', payload) => {
           action === 'confirm' ? resolve(payload) : reject(payload);
         },
         remove: () => remove(),
