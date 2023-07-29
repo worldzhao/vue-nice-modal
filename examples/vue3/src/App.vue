@@ -7,10 +7,10 @@ const result = ref<number>();
 
 const showDialog = async () => {
   try {
-    result.value = (await MyDialog.show({
+    result.value = await MyDialog.show({
       title: 'My Dialog Title',
       content: 'My Dialog Content',
-    })) as number;
+    });
   } catch (error) {
     console.log('reject', error);
   }
