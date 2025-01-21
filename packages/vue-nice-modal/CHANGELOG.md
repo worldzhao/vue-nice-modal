@@ -1,5 +1,11 @@
 # vue-nice-modal
 
+## 2.0.1
+
+### Patch Changes
+
+- 98617e2: fix: merge props
+
 ## 2.0.0
 
 ### Major Changes
