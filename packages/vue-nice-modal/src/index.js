@@ -262,14 +262,13 @@ export const create = (Comp) => {
 
         if (isVue2) {
           return h(Comp, {
-            props: componentProps,
-            attrs,
+            props: { ...attrs, ...componentProps },
           });
         }
 
         return h(Comp, {
-          ...componentProps,
           ...attrs,
+          ...componentProps,
         });
       };
     },
