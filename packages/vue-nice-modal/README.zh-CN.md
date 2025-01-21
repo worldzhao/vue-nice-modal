@@ -1,6 +1,6 @@
 # Vue Nice Modal
 
-[@ebay/nice-modal-react](https://github.com/eBay/nice-modal-react) Vue 版本。
+**[@ebay/nice-modal-react](https://github.com/eBay/nice-modal-react) Vue 版本。**
 
 vue-nice-modal 是一个工具库,可以将 Vue.js 的 modal 组件转换为基于 Promise 的 API。
 

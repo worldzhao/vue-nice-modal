@@ -1,6 +1,6 @@
 # Vue Nice Modal
 
-Vue version of [@ebay/nice-modal-react](https://github.com/eBay/nice-modal-react).
+**Vue version of [@ebay/nice-modal-react](https://github.com/eBay/nice-modal-react).**
 
 vue-nice-modal is a utility library that converts Vue.js modal components into Promise-based APIs.
 
