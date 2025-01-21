@@ -1,5 +1,11 @@
 # vue-nice-modal
 
+## 2.0.0
+
+### Major Changes
+
+- fcb6619: Vue version of [@ebay/nice-modal-react](https://github.com/eBay/nice-modal-react)
+
 ## 1.1.1
 
 ### Patch Changes
