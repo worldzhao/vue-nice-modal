@@ -1,256 +1,282 @@
 # Vue Nice Modal
 
-vue-nice-modal 是一个工具库,可以将 Vue.js 的 modal 组件转换为基于 Promise 的 API。
+[@ebay/nice-modal-react](https://github.com/eBay/nice-modal-react) Vue 版本。
 
-灵感来源于 [@ebay/nice-modal-react](https://github.com/eBay/nice-modal-react) 和 [vant](https://github.com/youzan/vant)。
+vue-nice-modal 是一个工具库,可以将 Vue.js 的 modal 组件转换为基于 Promise 的 API。
 
 支持 Vue 2.x,通过 [vue-demi](https://github.com/vueuse/vue-demi)。
 
 [English](https://github.com/worldzhao/vue-nice-modal/blob/main/README.md) | 简体中文
 
-## Examples
+一个优雅的 Vue 模态框状态管理方案，支持 Vue 2 和 Vue 3。
 
-你可以在 examples/\* 文件夹中查看示例。
+## 特性
+
+- 🎯 简单直观的 API
+- 🔄 基于 Promise 的模态框操作
+- 🎨 框架无关 - 可配合任何 UI 库使用
+- ⚡️ 轻量级，零依赖
+- 🔌 支持 Vue 2 和 Vue 3
+- 📦 完整的 TypeScript 支持
 
 ## 安装
 
 ```bash
+# npm
 npm install vue-nice-modal
-# or
-yarn add vue-nice-modal
-# or
+
+# pnpm
 pnpm add vue-nice-modal
 ```
 
-## 使用
+## 使用方式
 
-```javascript
-import { create } from 'vue-nice-modal';
-import MyModal from './MyModal.vue';
+### 1. Provider 包裹应用
 
-const myModal = create(MyModal);
+```html
+<!-- App.vue -->
+<template>
+  <NiceModalProvider>
+    <router-view />
+  </NiceModalProvider>
+</template>
 
-myModal
-  .show({
-    title: 'Hello, world!',
-    content: 'This is a nice modal.',
-  })
-  .then((result) => {
-    console.log('Confirmed! Result:', result);
-  })
-  .catch((error) => {
-    console.error('Rejected! Error:', error);
-  });
+<script setup>
+  import { Provider as NiceModalProvider } from '@gt/nice-modal-vue';
+</script>
 ```
 
-## 自定义 Modal 组件
+### 2. 创建模态框组件
 
-```vue
-<script setup lang="ts">
-import { Dialog } from 'vant';
-import { INiceModalHandlers } from 'vue-nice-modal';
-// inject hide/remove/callback methods by vue-nice-modal
-interface IProps extends INiceModalHandlers<number> {
-  visible: boolean;
-  // props you need
-  title: string;
-  content: string;
-}
-
-interface IEmits {
-  (e: 'update:visible', visible: boolean): void;
-}
-
-const props = defineProps<IProps>();
-
-// @ts-ignore
-const emit = defineEmits<IEmits>();
-
-const handleCancel = () => {
-  props.hide(); // or emit('update:visible', false)
-  props.callback('cancel'); // reject the promise
-};
-
-const handleConfirm = async () => {
-  // mock async function call
-  const sleep = (ms: number): Promise<number> =>
-    new Promise((res) =>
-      setTimeout(() => {
-        res(ms);
-      }, ms)
-    );
-
-  const payload = await sleep(1000);
-
-  // resolve the promise with payload
-  props.callback('confirm', payload);
-};
-</script>
-
+```html
+<!-- my-modal.vue -->
 <template>
-  <Dialog
-    :show="visible"
-    @update:show="$emit('update:visible', false)"
-    @cancel="handleCancel"
-    @confirm="handleConfirm"
-    @closed="remove"
-    :title="title"
-    :content="content"
+  <van-dialog
     show-cancel-button
-    class="demo-dialog"
+    :value="modal.visible.value"
+    :close-on-click-overlay="false"
+    :title="title"
+    :message="content"
+    @closed="modal.remove"
+    @confirm="handleConfirm"
+    @cancel="handleCancel"
+  />
+</template>
+
+<script setup>
+  import { useModal } from '@gt/nice-modal-vue';
+
+  const modal = useModal();
+  defineProps(['title', 'content']);
+
+  const handleCancel = () => {
+    modal.reject('cancel');
+    modal.hide();
+  };
+
+  const handleConfirm = () => {
+    modal.resolve('confirm');
+    modal.hide();
+  };
+</script>
+```
+
+> 可与任何 UI 库配合使用，如 element-ui
+
+```html
+<!-- my-modal.vue -->
+<template>
+  <el-dialog
+    :title="title"
+    :visible="modal.visible.value"
+    append-to-body
+    @closed="modal.remove"
   >
-    <div>Hello,Vue Nice Modal</div>
-  </Dialog>
+    <span>{{ content }}</span>
+    <span slot="footer" class="dialog-footer">
+      <el-button @click="handleCancel">取 消</el-button>
+      <el-button type="primary" @click="handleConfirm">确 定</el-button>
+    </span>
+  </el-dialog>
 </template>
 ```
 
-<details>
-<summary>点击展开详细说明</summary>
+> 使用 NiceModal.create 创建模态框高阶组件
 
-本节提供了一个使用 vue-nice-modal 库创建自定义 modal 组件的示例。该示例使用 vant UI 库的 Dialog 组件作为示例,但您可以使用任何自定义 modal 组件。
+```js
+// my-modal.js
+import NiceModal from '@gt/nice-modal-vue';
 
-要创建自己的 modal 组件,您需要定义一个继承 INiceModalHandlers 接口的接口。该接口应包括与您的 modal 组件相关的任何属性,例如标题属性和内容属性。您还可以包括任何其他需要的属性或方法。
+import _MyModal from './my-modal.vue';
 
-在示例中,visible 属性和 update:visible 事件由 vue-nice-modal 注入到自定义 modal 组件中。这些用于控制 modal 组件的可见性。visible 属性应是一个布尔值,用于确定 modal 是可见的还是不可见,update:visible 事件应在 modal 的可见性改变时触发。
-
-hide()、remove() 和 callback() 方法也由 vue-nice-modal 注入到自定义 modal 组件中。这些方法用于隐藏或删除 modal 组件,以及处理用户确认或取消 modal 操作。
-
-一旦您定义了自己的自定义 modal 组件,您可以使用 vue-nice-modal 提供的 create() 函数来创建一个 Modal 对象,该对象公开 show()、hide() 和 remove() 方法。然后,您可以使用 show() 方法显示自定义 modal 组件,并使用 vue-nice-modal 提供的基于 Promise 的 API 处理用户确认或取消 modal 操作。
-
-</details>
-
-### 使用插件共享应用上下文(Vue@^3 only)
-
-```javascript
-import { createApp } from 'vue';
-import { VueNiceModalPluginForVue3 } from 'vue-nice-modal';
-import App from './App.vue';
-
-const app = createApp(App);
-
-app.use(VueNiceModalPluginForVue3);
-
-app.mount('#app');
+export const MyModal = NiceModal.create(_MyModal);
 ```
 
-Vue Nice Modal 在内部创建了一个新的 Vue 应用程序实例，并将用户创建的组件挂载到该实例中。这使得它可以在模态框中正常运行，而不会与主应用程序的状态和逻辑发生冲突。
+### 3. 使用模态框
 
-然而，如果您需要在模态框中访问主应用程序中的数据或方法，您可以使用该插件实现共享上下文。
+#### 3.1 基础用法 - 直接使用组件
 
-> 你可以通过在插件选项中传递 appKey 的形式来区分多个应用程序，并在创建模态框实例时将其传递。
-
-```javascript
-app.use(VueNiceModalPluginForVue3, { appKey: 'another app key' });
-
-create(MyModal, 'another app key');
+```js
+const showModal = async () => {
+  try {
+    const res = await NiceModal.show(MyModal, {
+      title: '标题',
+      content: '内容',
+    });
+    console.log('结果:', res);
+  } catch (error) {
+    console.log('取消:', error);
+  }
+};
 ```
 
-在调用 app.use() 时，通过将选项对象传递给插件来传递 app 的 key（例如，{ appKey: 'another app key' }）。然后，在创建模态框实例时，需要将 appKey 作为选项传递给 create() 方法（例如，create(MyModal, 'another app key')）。这样就可以在多个应用程序中确保每个模态框都可以访问正确的上下文。
+#### 3.2 声明式用法 - 通过 ID 引用已声明的模态框
 
-## API
+> 可继承声明处上下文
 
-### create(Comp: Component): Modal
+```html
+<template>
+  <MyModal id="my-modal" />
+</template>
 
-create 函数接受 Vue.js 组件并返回一个带有以下方法的 Modal 对象:
-
-### show(options: ExtractOptions<ComponentProps<C>>): Promise<any>
-
-显示 modal 组件并返回一个 Promise,如果用户确认 modal 则 resolve,如果用户取消则 reject。
-
-options 参数是一个对象,包含与 modal 组件相关的属性(除去 vue-nice-modal 注入的通用属性与方法，仅包含用户自定义的所需 props)。ComponentProps 和 INiceModalHandlers 类型用于确保 options 对象的类型正确,并在编译时捕获与属性使用相关的任何错误。
-
-以下是 show 方法的类型提示实现:
-
-```typescript
-type ComponentProps<C extends Component> = C extends new (...args: any) => any
-  ? Omit<
-      InstanceType<C>['$props'],
-      keyof VNodeProps | keyof AllowedComponentProps
-    >
-  : never;
-
-type ExtractOptions<T extends Record<string, any>> = Omit<
-  T,
-  keyof INiceModalHandlers | 'visible' | 'onUpdate:visible'
->;
-
-export function create<C extends Component>(Comp: C) {
-  // ...
-
-  const show = (options: ExtractOptions<ComponentProps<C>>) => {
-    // ...
+<script setup>
+  const showModal = async () => {
+    try {
+      const res = await NiceModal.show('my-modal', {
+        title: '标题',
+        content: '内容',
+      });
+      console.log('结果:', res);
+    } catch (error) {
+      console.log('取消:', error);
+    }
   };
-
-  return {
-    show,
-    // ...
-  };
-}
+</script>
 ```
 
-### hide(): void
+#### 3.3 Hook 用法 - 使用 useModal 组合式 API
 
-隐藏 modal 组件。
+```js
+const modal = NiceModal.useModal(MyModal);
 
-### remove(): void
-
-从 DOM 中删除 modal 组件。
-
-## 类型定义
-
-vue-nice-modal 提供了一些 TypeScript 类型定义:
-
-### Modal
-
-Modal 接口定义了 create 返回的对象的方法。
-
-```typescript
-interface Modal {
-  show: (options: ExtractOptions<ComponentProps<C>>) => Promise<any>;
-  hide: () => void;
-  remove: () => void;
-}
+const showModal = async () => {
+  try {
+    const res = await modal.show({
+      title: '标题',
+      content: '内容',
+    });
+    console.log('结果:', res);
+  } catch (error) {
+    console.log('取消:', error);
+  }
+};
 ```
 
-### ComponentProps<C extends Component>
+#### 3.4 注册用法 - 通过注册后使用 ID 调用
 
-ComponentProps 工具泛型用于获取 Vue 组件的属性。
+```js
+// 预先注册模态框
+NiceModal.register('register-modal', MyModal);
 
-```typescript
-type ComponentProps<C extends Component> = C extends new (...args: any) => any
-  ? Omit<
-      InstanceType<C>['$props'],
-      keyof VNodeData | keyof AllowedComponentProps
-    >
-  : never;
+const showModal = async () => {
+  try {
+    const res = await NiceModal.show('register-modal', {
+      title: '标题',
+      content: '内容',
+    });
+    console.log('结果:', res);
+  } catch (error) {
+    console.log('取消:', error);
+  }
+};
 ```
 
-### INiceModalHandlers
+## API 参考
 
-INiceModalHandlers 接口定义了用于处理用户确认或取消 modal 的方法。
+### 组件
 
-```typescript
-export interface INiceModalHandlers<T = any> {
-  callback: (action: 'confirm' | 'cancel', payload?: T) => void;
-  remove: () => void;
-  hide: () => void;
-}
+#### `NiceModal.Provider`
+
+模态框容器组件，需要包裹在应用最外层。
+
+#### `NiceModal.create(Component)`
+
+高阶组件，用于创建模态框组件。
+
+### 方法
+
+#### `show(modalId, args?)`
+
+显示模态框，支持传入参数。
+
+- `modalId`: 模态框 ID 或组件
+- `args`: 传递给模态框的参数
+- 返回: Promise
+
+#### `hide(modalId)`
+
+隐藏模态框。
+
+- `modalId`: 模态框 ID 或组件
+- 返回: Promise
+
+#### `remove(modalId)`
+
+从 DOM 中移除模态框。
+
+- `modalId`: 模态框 ID 或组件
+
+#### `register(id, component, props?)`
+
+注册模态框组件。
+
+- `id`: 模态框 ID
+- `component`: 模态框组件
+- `props`: 默认 props
+
+#### `unregister(id)`
+
+注销模态框组件。
+
+- `id`: 模态框 ID
+
+### Hook
+
+#### `useModal(modal?, args?)`
+
+返回值:
+
+- `id`: 模态框 ID
+- `args`: 模态框参数
+- `visible`: 可见状态
+- `show(args?)`: 显示模态框
+- `hide()`: 隐藏模态框
+- `remove()`: 移除模态框
+- `resolve(value)`: 解析模态框 Promise
+- `reject(reason)`: 拒绝模态框 Promise
+- `resolveHide(value)`: 解析隐藏 Promise
+
+## 类型支持
+
+本包提供完整的 TypeScript 类型声明，支持 props 和参数的类型推导。
+
+## 构建产物
+
+- 支持 Tree Shaking
+- 提供 ESM/CJS 两种格式
+
+```bash
+dist/
+  ├── esm/           # ES Module 格式
+  └── lib/           # CommonJS 格式
 ```
 
-> 这些方法以及 visible 和 update:visible 事件将被注入用户的自定义 modal 组件中,即使不使用基于 Promise 的函数调用,相关属性也可以通过 v-model(visible 和 update:visible)传递从而控制组件的可见性。这允许用户按自己喜欢的方式控制 modal 组件的显示和隐藏,同时也确保了 vue-nice-modal 库的灵活性。
+## 浏览器兼容性
 
-### ExtractOptions<T extends Record<string, any>>
+- iOS >= 9
+- Android >= 4.4
+- 现代浏览器的最新两个版本
 
-ExtractOptions 类型用于提取与 modal 组件相关的选项（除去 vue-nice-modal 注入的通用属性与方法）。
+## License
 
-```typescript
-type ExtractOptions<T extends Record<string, any>> = Omit<
-  T,
-  keyof INiceModalHandlers | 'visible' | 'onUpdate:visible'
->;
-```
-
-## 注意
-
-- modal 组件必须具有 visible 属性和 update:visible 事件以控制其可见性。请参阅 MyModal.vue 作为示例。
-- vue-nice-modal 会在 DOM 中添加一个根元素 div.vue-nice-modal-root。请确保样式兼容。
+MIT
