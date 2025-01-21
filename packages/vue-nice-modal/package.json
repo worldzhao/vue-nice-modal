@@ -4,6 +4,7 @@
   "private": false,
   "description": "Utility library that converts Vue.js modal components into a Promise-based API",
   "keywords": [
+    "nice-modal",
     "vue",
     "vue3",
     "utility-library",
@@ -24,49 +25,42 @@
     "email": "1007326924@qq.com"
   },
   "sideEffects": false,
-  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/lib/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/lib/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "format": "prettier ./src --write",
-    "prepublishOnly": "npm run build"
+    "build": "rm -rf dist && npm run build:esm && npm run build:cjs && cp ./src/index.d.ts ./dist/index.d.ts",
+    "build:cjs": "BUILD_FORMAT=cjs vite build",
+    "build:esm": "BUILD_FORMAT=esm vite build",
+    "start": "npm run build:esm -- --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "vue-demi": "^0.14.5"
+    "vue-demi": "^0.14.10"
   },
   "devDependencies": {
-    "@swc/core": "^1.3.67",
-    "@types/node": "^18.16.11",
-    "tsup": "^7.1.0",
-    "typescript": "^5.0.4",
+    "@babel/preset-env": "^7.1.2",
+    "@rollup/plugin-babel": "^6.0.4",
+    "vite": "^6.0.7",
+    "vite-plugin-external": "^4.3.1",
     "vue": "^3.3.4"
   },
   "peerDependencies": {
-    "@vue/composition-api": "^1.1.2",
-    "vue": "^2.6.0 || ^3.0.0"
-  },
-  "peerDependenciesMeta": {
-    "@vue/composition-api": {
-      "optional": true
-    }
+    "vue": "^2.7 || ^3.0"
   },
   "publishConfig": {
     "access": "public"
-  },
-  "tsup": {
-    "entry": [
-      "src/index.ts"
-    ],
-    "format": [
-      "cjs",
-      "esm"
-    ],
-    "legacyOutput": true,
-    "splitting": false,
-    "sourcemap": true,
-    "clean": true,
-    "dts": true
   }
 }

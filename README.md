@@ -1,254 +1,282 @@
 # Vue Nice Modal
 
-vue-nice-modal is a utility library that converts Vue.js modal components into a Promise-based API.
+Vue version of [@ebay/nice-modal-react](https://github.com/eBay/nice-modal-react).
 
-Inspired By [@ebay/nice-modal-react](https://github.com/eBay/nice-modal-react) and [vant](https://github.com/youzan/vant).
+vue-nice-modal is a utility library that converts Vue.js modal components into Promise-based APIs.
 
-Support for Vue 2.x via [vue-demi](https://github.com/vueuse/vue-demi)
+Supports Vue 2.x via [vue-demi](https://github.com/vueuse/vue-demi).
 
 English | [简体中文](https://github.com/worldzhao/vue-nice-modal/blob/main/README.zh-CN.md)
 
-## Examples
+An elegant Vue modal state management solution, supporting both Vue 2 and Vue 3.
 
-You can see a list of examples at: `examples/*` folder.
+## Features
 
-## Install
+- 🎯 Simple and intuitive API
+- 🔄 Promise-based modal operations
+- 🎨 Framework agnostic - works with any UI library
+- ⚡️ Lightweight, zero dependencies
+- 🔌 Supports both Vue 2 and Vue 3
+- 📦 Full TypeScript support
+
+## Installation
 
 ```bash
+# npm
 npm install vue-nice-modal
-# or
-yarn add vue-nice-modal
-# or
+
+# pnpm
 pnpm add vue-nice-modal
 ```
 
 ## Usage
 
-```javascript
-import { create } from 'vue-nice-modal';
-import MyModal from './MyModal.vue';
+### 1. Wrap application with Provider
 
-const myModal = create(MyModal);
+```html
+<!-- App.vue -->
+<template>
+  <NiceModalProvider>
+    <router-view />
+  </NiceModalProvider>
+</template>
 
-myModal
-  .show({
-    title: 'Hello, world!',
-    content: 'This is a nice modal.',
-  })
-  .then((result) => {
-    console.log('Confirmed! Result:', result);
-  })
-  .catch((error) => {
-    console.error('Rejected! Error:', error);
-  });
+<script setup>
+  import { Provider as NiceModalProvider } from '@gt/nice-modal-vue';
+</script>
 ```
 
-## Create Your Modal Component
+### 2. Create modal component
 
-```vue
-<script setup lang="ts">
-import { Dialog } from 'vant';
-import { INiceModalHandlers } from 'vue-nice-modal';
-// inject hide/remove/callback methods by vue-nice-modal
-interface IProps extends INiceModalHandlers<number> {
-  visible: boolean;
-  // props you need
-  title: string;
-  content: string;
-}
-
-interface IEmits {
-  (e: 'update:visible', visible: boolean): void;
-}
-
-const props = defineProps<IProps>();
-
-// @ts-ignore
-const emit = defineEmits<IEmits>();
-
-const handleCancel = () => {
-  props.hide(); // or emit('update:visible', false)
-  props.callback('cancel'); // reject the promise
-};
-
-const handleConfirm = async () => {
-  // mock async function call
-  const sleep = (ms: number): Promise<number> =>
-    new Promise((res) =>
-      setTimeout(() => {
-        res(ms);
-      }, ms)
-    );
-
-  const payload = await sleep(1000);
-
-  // resolve the promise with payload
-  props.callback('confirm', payload);
-};
-</script>
-
+```html
+<!-- my-modal.vue -->
 <template>
-  <Dialog
-    :show="visible"
-    @update:show="$emit('update:visible', false)"
-    @cancel="handleCancel"
-    @confirm="handleConfirm"
-    @closed="remove"
-    :title="title"
-    :content="content"
+  <van-dialog
     show-cancel-button
-    class="demo-dialog"
+    :value="modal.visible.value"
+    :close-on-click-overlay="false"
+    :title="title"
+    :message="content"
+    @closed="modal.remove"
+    @confirm="handleConfirm"
+    @cancel="handleCancel"
+  />
+</template>
+
+<script setup>
+  import { useModal } from '@gt/nice-modal-vue';
+
+  const modal = useModal();
+  defineProps(['title', 'content']);
+
+  const handleCancel = () => {
+    modal.reject('cancel');
+    modal.hide();
+  };
+
+  const handleConfirm = () => {
+    modal.resolve('confirm');
+    modal.hide();
+  };
+</script>
+```
+
+> Can be used with any UI library, such as element-ui
+
+```html
+<!-- my-modal.vue -->
+<template>
+  <el-dialog
+    :title="title"
+    :visible="modal.visible.value"
+    append-to-body
+    @closed="modal.remove"
   >
-    <div>Hello,Vue Nice Modal</div>
-  </Dialog>
+    <span>{{ content }}</span>
+    <span slot="footer" class="dialog-footer">
+      <el-button @click="handleCancel">Cancel</el-button>
+      <el-button type="primary" @click="handleConfirm">Confirm</el-button>
+    </span>
+  </el-dialog>
 </template>
 ```
 
-<details>
-<summary>Click to expand for detailed explanation</summary>
+> Create modal higher-order component using NiceModal.create
 
-This section provides an example of how to create a custom modal component using the vue-nice-modal library. The example uses the Dialog component from the vant UI library as an example, but you can use any custom modal component that you prefer.
+```js
+// my-modal.js
+import NiceModal from '@gt/nice-modal-vue';
 
-To create your own modal component, you need to define an interface that extends the INiceModalHandlers interface. This interface should include any props that are relevant for your modal component, such as a title prop and a content prop. You can also include any additional props or methods that you need for your component.
+import _MyModal from './my-modal.vue';
 
-In the example, the visible prop and the update:visible event are injected into the custom modal component by vue-nice-modal. These are used to control the visibility of the modal component. The visible prop should be a Boolean that determines whether the modal is visible or not, and the update:visible event should be emitted when the visibility of the modal changes.
-
-The hide(), remove(), and callback() methods are also injected into the custom modal component by vue-nice-modal. These methods are used to hide or remove the modal component, and to handle the user's confirmation or cancellation of the modal.
-
-Once you have defined your custom modal component, you can use the create() function provided by vue-nice-modal to create a Modal object that exposes the show(), hide(), and remove() methods. You can then use the show() method to display your custom modal component and handle the user's confirmation or cancellation of the modal using the Promise-based API provided by vue-nice-modal.
-
-</details>
-
-### Plugin for sharing context(Vue@^3 only)
-
-```javascript
-import { createApp } from 'vue';
-import { VueNiceModalPluginForVue3 } from 'vue-nice-modal';
-import App from './App.vue';
-
-const app = createApp(App);
-
-app.use(VueNiceModalPluginForVue3);
-
-app.mount('#app');
+export const MyModal = NiceModal.create(_MyModal);
 ```
 
-Vue Nice Modal creates a new Vue application instance internally and mounts the user-created component to that instance. This allows it to run properly inside a modal without conflicting with the state and logic of the main application.
+### 3. Using modals
 
-However, if you need to access data or methods from the main application inside the modal, you can use the plugin to achieve shared context.
+#### 3.1 Basic usage - directly using component
 
-> you can differentiate between multiple applications by passing a appKey as an option in the plugin options and passing it when creating the modal instance.
-
-```javascript
-app.use(VueNiceModalPluginForVue3, { appKey: 'another app key' });
-
-create(MyModal, 'another app key');
+```js
+const showModal = async () => {
+  try {
+    const res = await NiceModal.show(MyModal, {
+      title: 'Title',
+      content: 'Content',
+    });
+    console.log('Result:', res);
+  } catch (error) {
+    console.log('Cancelled:', error);
+  }
+};
 ```
 
-## API
+#### 3.2 Declarative usage - referencing declared modal via ID
 
-### create(Comp: Component): Modal
+> Can inherit context from declaration
 
-The create function takes a Vue.js component and returns a Modal object with the following methods:
+```html
+<template>
+  <MyModal id="my-modal" />
+</template>
 
-### show(options: ExtractOptions<ComponentProps<C>>): Promise<any>
-
-Shows the modal component and returns a Promise that resolves if the user confirms the modal, or rejects if the user cancels it.
-
-The options parameter is an object that should contain the props that are relevant to the modal component(Excluding the common properties and methods injected by vue-nice-modal, only include custom properties required by the component itself). The ComponentProps and INiceModalHandlers types are used to ensure that the options object is properly typed and that any errors related to prop usage are caught at compile-time.
-
-Here's how the show method's type hinting is implemented:
-
-```typescript
-type ComponentProps<C extends Component> = C extends new (...args: any) => any
-  ? Omit<
-      InstanceType<C>['$props'],
-      keyof VNodeProps | keyof AllowedComponentProps
-    >
-  : never;
-
-type ExtractOptions<T extends Record<string, any>> = Omit<
-  T,
-  keyof INiceModalHandlers | 'visible' | 'onUpdate:visible'
->;
-
-export function create<C extends Component>(Comp: C) {
-  // ...
-
-  const show = (options: ExtractOptions<ComponentProps<C>>) => {
-    // ...
+<script setup>
+  const showModal = async () => {
+    try {
+      const res = await NiceModal.show('my-modal', {
+        title: 'Title',
+        content: 'Content',
+      });
+      console.log('Result:', res);
+    } catch (error) {
+      console.log('Cancelled:', error);
+    }
   };
-
-  return {
-    show,
-    // ...
-  };
-}
+</script>
 ```
 
-### hide(): void
+#### 3.3 Hook usage - using useModal composition API
 
-Hides the modal component.
+```js
+const modal = NiceModal.useModal(MyModal);
 
-### remove(): void
-
-Removes the modal component from the DOM.
-
-## Types
-
-vue-nice-modal provides some TypeScript type definitions:
-
-### Modal
-
-The Modal interface defines the methods of the object returned by create.
-
-```typescript
-interface Modal {
-  show: (options: ExtractOptions<ComponentProps<C>>) => Promise<any>;
-  hide: () => void;
-  remove: () => void;
-}
+const showModal = async () => {
+  try {
+    const res = await modal.show({
+      title: 'Title',
+      content: 'Content',
+    });
+    console.log('Result:', res);
+  } catch (error) {
+    console.log('Cancelled:', error);
+  }
+};
 ```
 
-### ComponentProps<C extends Component>
+#### 3.4 Registration usage - using ID after registration
 
-The ComponentProps type defines the props of a Vue.js component.
+```js
+// Pre-register modal
+NiceModal.register('register-modal', MyModal);
 
-```typescript
-type ComponentProps<C extends Component> = C extends new (...args: any) => any
-  ? Omit<
-      InstanceType<C>['$props'],
-      keyof VNodeData | keyof AllowedComponentProps
-    >
-  : never;
+const showModal = async () => {
+  try {
+    const res = await NiceModal.show('register-modal', {
+      title: 'Title',
+      content: 'Content',
+    });
+    console.log('Result:', res);
+  } catch (error) {
+    console.log('Cancelled:', error);
+  }
+};
 ```
 
-### INiceModalHandlers
+## API Reference
 
-The INiceModalHandlers interface defines the methods that are used to handle the user's confirmation or cancellation of the modal.
+### Components
 
-```typescript
-export interface INiceModalHandlers<T = any> {
-  callback: (action: 'confirm' | 'cancel', payload?: T) => void;
-  remove: () => void;
-  hide: () => void;
-}
+#### `NiceModal.Provider`
+
+Modal container component, needs to wrap the outermost layer of the application.
+
+#### `NiceModal.create(Component)`
+
+Higher-order component for creating modal components.
+
+### Methods
+
+#### `show(modalId, args?)`
+
+Show modal, supports passing parameters.
+
+- `modalId`: Modal ID or component
+- `args`: Parameters passed to modal
+- Returns: Promise
+
+#### `hide(modalId)`
+
+Hide modal.
+
+- `modalId`: Modal ID or component
+- Returns: Promise
+
+#### `remove(modalId)`
+
+Remove modal from DOM.
+
+- `modalId`: Modal ID or component
+
+#### `register(id, component, props?)`
+
+Register modal component.
+
+- `id`: Modal ID
+- `component`: Modal component
+- `props`: Default props
+
+#### `unregister(id)`
+
+Unregister modal component.
+
+- `id`: Modal ID
+
+### Hook
+
+#### `useModal(modal?, args?)`
+
+Return values:
+
+- `id`: Modal ID
+- `args`: Modal parameters
+- `visible`: Visibility state
+- `show(args?)`: Show modal
+- `hide()`: Hide modal
+- `remove()`: Remove modal
+- `resolve(value)`: Resolve modal Promise
+- `reject(reason)`: Reject modal Promise
+- `resolveHide(value)`: Resolve hide Promise
+
+## Type Support
+
+This package provides complete TypeScript type declarations, supporting type inference for props and parameters.
+
+## Build Output
+
+- Supports Tree Shaking
+- Provides both ESM/CJS formats
+
+```bash
+dist/
+  ├── esm/           # ES Module format
+  └── lib/           # CommonJS format
 ```
 
-> These methods, as well as visible and update:visible event, will be injected into the user's custom modal component, and even if not using Promise-based function calls, related props can be passed in based on v-model(visible and update:visible) to control the visibility of the component. This allows users to control the display and hiding of the modal component in their own preferred way, while also ensuring the flexibility of the vue-nice-modal library
+## Browser Compatibility
 
-### ExtractOptions<T extends Record<string, any>>
+- iOS >= 9
+- Android >= 4.4
+- Latest two versions of modern browsers
 
-The ExtractOptions type is used to extract the options that are relevant to the modal component(Excluding the common properties and methods injected by vue-nice-modal, only include custom properties required by the component itself).
+## License
 
-```typescript
-type ExtractOptions<T extends Record<string, any>> = Omit<
-  T,
-  keyof INiceModalHandlers | 'visible' | 'onUpdate:visible'
->;
-```
-
-## Notes
-
-- The modal component must have a visible prop and an update:visible event to control its visibility. Check MyModal.vue for an example.
-- vue-nice-modal adds a root element div.vue-nice-modal-root to the DOM. Make sure the styles are compatible.
+MIT
