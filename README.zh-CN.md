@@ -42,7 +42,7 @@ pnpm add vue-nice-modal
 </template>
 
 <script setup>
-  import { Provider as NiceModalProvider } from '@gt/nice-modal-vue';
+  import { Provider as NiceModalProvider } from 'vue-nice-modal';
 </script>
 ```
 
@@ -64,7 +64,7 @@ pnpm add vue-nice-modal
 </template>
 
 <script setup>
-  import { useModal } from '@gt/nice-modal-vue';
+  import { useModal } from 'vue-nice-modal';
 
   const modal = useModal();
   defineProps(['title', 'content']);
@@ -105,7 +105,7 @@ pnpm add vue-nice-modal
 
 ```js
 // my-modal.js
-import NiceModal from '@gt/nice-modal-vue';
+import NiceModal from 'vue-nice-modal';
 
 import _MyModal from './my-modal.vue';
 
