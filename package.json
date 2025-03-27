@@ -3,8 +3,7 @@
   "scripts": {
     "changeset": "changeset",
     "preinstall": "npx only-allow pnpm",
-    "prepare": "husky install",
-    "version": "changeset version && pnpm install"
+    "prepare": "husky install"
   },
   "lint-staged": {
     "*.{js,ts,css,md,jsx,tsx,vue,json}": "prettier . --write"

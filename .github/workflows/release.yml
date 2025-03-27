@@ -23,7 +23,7 @@ jobs:
           node-version: 20
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --ignore-workspace
       - name: Creating .npmrc
         run: |
           cat << EOF > "$HOME/.npmrc"
@@ -35,8 +35,8 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          version: pnpm run version
-          publish: pnpm exec changeset publish
+          version: pnpm exec changeset version
+          publish: pnpm --filter vue-nice-modal install && pnpm --filter vue-nice-modal build && pnpm exec changeset publish
           commit: '[CI] Release'
           title: '[CI] Release'
         env:
