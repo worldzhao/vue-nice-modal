@@ -4,7 +4,7 @@
     "changeset": "changeset",
     "preinstall": "npx only-allow pnpm",
     "prepare": "husky install",
-    "version": "changeset version && pnpm install"
+    "release": "pnpm --filter vue-nice-modal build && pnpm exec changeset publish"
   },
   "lint-staged": {
     "*.{js,ts,css,md,jsx,tsx,vue,json}": "prettier . --write"
