@@ -1,5 +1,11 @@
 # vue-nice-modal
 
+## 2.1.0
+
+### Minor Changes
+
+- 871e1e7: publish dist
+
 ## 2.0.1
 
 ### Patch Changes
