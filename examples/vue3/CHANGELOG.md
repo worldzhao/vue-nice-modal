@@ -1,5 +1,12 @@
 # example-vue3
 
+## 0.0.8
+
+### Patch Changes
+
+- Updated dependencies [218bc1d]
+  - vue-nice-modal@2.1.1
+
 ## 0.0.7
 
 ### Patch Changes
